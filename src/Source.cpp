@@ -23,7 +23,7 @@
 #include <nlohmann/json.hpp>
 #include <rickycorte/Logging.hpp>
 
-#include "HikariStaticConfig.h"
+#include "HikariStaticConfig.hpp"
 #include "config/Config.hpp"
 
 

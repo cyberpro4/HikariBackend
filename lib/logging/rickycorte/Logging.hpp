@@ -21,10 +21,45 @@
 #ifndef HIKARIBACKEND_LOGGING_H
 #define HIKARIBACKEND_LOGGING_H
 
+
+#define LOG_SHOW_CURRENT_DAY false
+#define SHOW_LOG_TIME
+
+
 #include <iostream>
+#include <ctime>
+
 
 namespace RickyCorte
 {
+
+    /**
+     * Get the current hour
+     *
+     * @param show_date pass true to show current day, month and year
+     * @return formatted date string
+     */
+    static inline std::string getTimeString(bool show_date = false)
+    {
+        std::string date = "";
+        time_t local = time(nullptr);
+        struct tm *lt = localtime(&local);
+        if(lt)
+        {
+            char dt[50];
+            if(show_date)
+                strftime(dt,50,"%d/%m/%Y %H:%M:%S %Z", lt);
+            else
+                strftime(dt,50,"%H:%M:%S %Z", lt);
+            date = dt;
+        }
+        else
+            date= "err";
+
+        return date;
+    }
+
+
     /**
     * Write base overload, writes to stdout the parameter t
     */
@@ -51,6 +86,9 @@ namespace RickyCorte
     template <typename... Targs>
     static inline void console_message(const std::string& prefix, Targs... args)
     {
+#ifdef SHOW_LOG_TIME
+        std::cout << "[" << getTimeString(LOG_SHOW_CURRENT_DAY)<<"] ";
+#endif
         std::cout << prefix << " ";
         write(args...);
     }
@@ -59,17 +97,17 @@ namespace RickyCorte
 template <typename... Targs>
 inline void RC_DEBUG(Targs... args)
 {
-#ifndef SHOW_DEBUG
+#ifndef HIDE_DEBUG
     RickyCorte::console_message("[DEBUG]", args...);
-#endif // !SHOW_DEBUG
+#endif // !HIDE_DEBUG
 }
 
 template <typename... Targs>
 inline void RC_INFO(Targs... args)
 {
-#ifndef SHOW_INFO
+#ifndef HIDE_INFO
     RickyCorte::console_message("[INFO]", args...);
-#endif // !SHOW_INFO
+#endif // !HIDE_INFO
 }
 
 template <typename... Targs>

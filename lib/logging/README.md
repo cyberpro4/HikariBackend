@@ -17,6 +17,7 @@ First include header
 Example use:
 ```cpp
 int a = 1;
+std::string msg = " is wrong";
 
 // Print [DEBUG] test 1
 RC_DEBUG("test ", a);
@@ -27,10 +28,27 @@ RC_INFO("test ", a);
 // Print [WARNING] test 1
 RC_WARNING("test ", a);
 
-// Print [ERROR] test 1
-RC_ERROR("test ", a);
+// Print [ERROR] test 1 is wrong
+RC_ERROR("test ", a, msg);
 
 // Print [CRITICAL] test 1
 RC_CRITICAL("test ", a);
 ```
 
+## Config
+
+You can define two different variables to toggle INFO and DUBUG logs
+
+* ```HIDE_DEBUG``` toggles DEBUG messages
+* ```HIDE_INFO``` toggles INFO messages
+* ```SHOW_LOG_TIME``` undefine this variable to hide log date
+* ```LOG_SHOW_CURRENT_DAY``` set this variable to true to show current date (only works if SHOW_LOG_TIME is set)
+
+## Future improvements
+* Thread safety
+* Write to system logs
+* Write on log files
+
+
+#define false
+#define SHOW_LOG_TIME
