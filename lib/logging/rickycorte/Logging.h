@@ -53,7 +53,6 @@ namespace RickyCorte
     {
         std::cout << prefix << " ";
         write(args...);
-        std::cout << std::endl;
     }
 
     template <typename... Targs>

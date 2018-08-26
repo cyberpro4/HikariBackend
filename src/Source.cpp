@@ -43,10 +43,12 @@ int main()
 
     printStartHeader();
 
-    json j;
-    j["test"] = "ok :3";
+    RC_INFO("Get: ", Config::Global::Get("test"));
+    RC_INFO("Get: ", Config::Global::Get("test", "rip"));
+    Config::Global::Set("test", "Sono un baka :3");
+    RC_INFO("Get: ", Config::Global::Get("test"));
 
-    RC_INFO(j.dump());
+    Config::Global::Dispose();
 
     return 0;
 }

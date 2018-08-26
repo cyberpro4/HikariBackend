@@ -5,5 +5,7 @@ include_directories(config/include)
 
 add_subdirectory(config)
 
+
 add_executable(HikariBackend ../lib/logging/rickycorte/Logging.h HikariStaticConfig.h Source.cpp)
+
 target_link_libraries(HikariBackend HikariConfig)
