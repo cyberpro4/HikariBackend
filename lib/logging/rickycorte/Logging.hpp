@@ -54,41 +54,40 @@ namespace RickyCorte
         std::cout << prefix << " ";
         write(args...);
     }
+}
 
-    template <typename... Targs>
-    inline void RC_DEBUG(Targs... args)
-    {
+template <typename... Targs>
+inline void RC_DEBUG(Targs... args)
+{
 #ifndef SHOW_DEBUG
-        console_message("[DEBUG]", args...);
+    RickyCorte::console_message("[DEBUG]", args...);
 #endif // !SHOW_DEBUG
-    }
+}
 
-    template <typename... Targs>
-    inline void RC_INFO(Targs... args)
-    {
+template <typename... Targs>
+inline void RC_INFO(Targs... args)
+{
 #ifndef SHOW_INFO
-        console_message("[INFO]", args...);
+    RickyCorte::console_message("[INFO]", args...);
 #endif // !SHOW_INFO
-    }
+}
 
-    template <typename... Targs>
-    inline void RC_WARNING(Targs... args)
-    {
-        console_message("[WARNING]", args...);
-    }
+template <typename... Targs>
+inline void RC_WARNING(Targs... args)
+{
+    RickyCorte::console_message("[WARNING]", args...);
+}
 
-    template <typename... Targs>
-    inline void RC_ERROR(Targs... args)
-    {
-        console_message("[ERROR]", args...);
-    }
+template <typename... Targs>
+inline void RC_ERROR(Targs... args)
+{
+    RickyCorte::console_message("[ERROR]", args...);
+}
 
-    template <typename... Targs>
-    inline void RC_CRITICAL(Targs... args)
-    {
-        console_message("[CRITICAL]", args...);
-    }
-
+template <typename... Targs>
+inline void RC_CRITICAL(Targs... args)
+{
+    RickyCorte::console_message("[CRITICAL]", args...);
 }
 
 #endif //HIKARIBACKEND_LOGGING_H

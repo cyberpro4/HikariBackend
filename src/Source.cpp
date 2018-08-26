@@ -21,10 +21,10 @@
 #include <iostream>
 
 #include <nlohmann/json.hpp>
-#include <rickycorte/Logging.h>
+#include <rickycorte/Logging.hpp>
 
 #include "HikariStaticConfig.h"
-#include "config/Config.h"
+#include "config/Config.hpp"
 
 
 void printStartHeader()

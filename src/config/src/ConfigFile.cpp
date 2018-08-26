@@ -18,12 +18,12 @@
  *
  */
 
-#include "config/ConfigFile.h"
+#include "config/ConfigFile.hpp"
 
 #include <fstream>
 #include <streambuf>
 
-#include <rickycorte/Logging.h>
+#include <rickycorte/Logging.hpp>
 
 
 using namespace RickyCorte;

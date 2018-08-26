@@ -18,8 +18,16 @@
  *
  */
 
-#include "config/Config.h"
+#ifndef HIKARIBACKEND_CONFIG_H
+#define HIKARIBACKEND_CONFIG_H
 
+#define GLOBAL_CONFIG_FILE "hikari.conf"
+
+#include <string>
+
+#include <rickycorte/Logging.hpp>
+
+#include "ConfigFile.hpp"
 
 namespace RickyCorte
 {
@@ -28,23 +36,10 @@ namespace RickyCorte
 
         namespace Global
         {
-
-            ConfigFile *_global_config = nullptr;
-
-
             /**
              * Initialize global configuration file
              */
-            void Init()
-            {
-                if(_global_config)
-                {
-                    RC_WARNING("Global config should be initialized only once");
-                    return;
-                }
-
-                _global_config = new ConfigFile(GLOBAL_CONFIG_FILE);
-            }
+            void Init();
 
 
             /**
@@ -54,15 +49,7 @@ namespace RickyCorte
              * @param default_value default key value
              * @return key value or default_value if key is missing
              */
-            std::string Get(const std::string& key, const std::string& default_value)
-            {
-                if (!_global_config)
-                {
-                    RC_WARNING("Global config is not initialized and you are trying to access it! Running Init for you :3");
-                    Init();
-                }
-                return _global_config->Get(key, default_value);
-            }
+            std::string Get(const std::string& key, const std::string& default_value);
 
 
             /**
@@ -71,10 +58,7 @@ namespace RickyCorte
              * @param key key to find
              * @return key value or "" if key is missing
              */
-            std::string Get(const std::string& key)
-            {
-                return Get(key, "");
-            }
+            std::string Get(const std::string& key);
 
 
             /**
@@ -84,26 +68,16 @@ namespace RickyCorte
              * @param value value to set
              * @return false on errors
              */
-            bool Set(const std::string& key, const std::string& value)
-            {
-                if (!_global_config)
-                {
-                    RC_WARNING("Global config is not initialized and you are trying to access it! Running Init for you :3");
-                    Init();
-                }
-                return _global_config->Set(key, value);
-            }
+            bool Set(const std::string& key, const std::string& value);
+
 
             /**
              * Clean up global save instance
              */
-            void Dispose()
-            {
-                if(_global_config)
-                    delete _global_config;
-                else RC_INFO("You should init global config before trying to dispose it");
-            }
+            void Dispose();
 
         }
     }
 }
+
+#endif //HIKARIBACKEND_CONFIG_H
