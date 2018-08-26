@@ -48,7 +48,3 @@ You can define two different variables to toggle INFO and DUBUG logs
 * Thread safety
 * Write to system logs
 * Write on log files
-
-
-#define false
-#define SHOW_LOG_TIME
