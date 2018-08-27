@@ -22,9 +22,9 @@
 
 #include <fstream>
 #include <streambuf>
+#include <sstream>
 
 #include <rickycorte/Logging.hpp>
-
 
 using namespace RickyCorte;
 
@@ -47,23 +47,26 @@ std::string ConfigFile::Get(const std::string &key)
 
 std::string ConfigFile::Get(const std::string &key, const std::string default_value)
 {
-    if(_json.find(key) != _json.end())
+    try
     {
-        return _json[key];
+        return _json[nlohmann::json::json_pointer("/"+key)];
     }
-    else
+    catch (...)
     {
-        Set(key, default_value);
-        return default_value;
+        RC_DEBUG("Unable to read json key: ", key, " of ", _file_name);
     }
+
+    Set(key,default_value);
+    return default_value;
 }
 
 
 bool ConfigFile::Set(const std::string &key, const std::string &value)
 {
-    _json[key] = value;
-    saveJsonToFile(_file_name, _json);
-    return false;
+
+    _json[nlohmann::json::json_pointer("/"+key)] = value;
+
+    return saveJsonToFile(_file_name, _json);
 }
 
 

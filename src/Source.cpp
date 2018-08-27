@@ -43,9 +43,12 @@ int main()
 
     printStartHeader();
 
-    RC_INFO("Get: ", Config::Global::Get("test"));
-    RC_INFO("Get: ", Config::Global::Get("test", "rip"));
-    Config::Global::Set("test", "Sono un baka :3");
+    RC_INFO("Get: ", Config::Global::Get("i love"));
+    RC_INFO("Get: ", Config::Global::Get("parent/inner", "rip"));
+    Config::Global::Set("i love", "lolies");
+    Config::Global::Set("parent/swat/fbi", "is watching you");
+    Config::Global::Set("parent/swat/lewd", "lolies");
+    RC_INFO("Get: ", Config::Global::Get("fuck/the/police"));
     RC_INFO("Get: ", Config::Global::Get("test"));
 
     Config::Global::Dispose();
