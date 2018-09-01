@@ -28,69 +28,91 @@
 
 #include <iostream>
 #include <ctime>
+#include <mutex>
 
 
 namespace RickyCorte
 {
 
-    /**
-     * Get the current hour
-     *
-     * @param show_date pass true to show current day, month and year
-     * @return formatted date string
-     */
-    static inline std::string getTimeString(bool show_date = false)
+    namespace logging
     {
-        std::string date = "";
-        time_t local = time(nullptr);
-        struct tm *lt = localtime(&local);
-        if(lt)
+        /**
+         * Get the current hour
+         *
+         * @param show_date pass true to show current day, month and year
+         * @return formatted date string
+         */
+        static inline std::string getTimeString(bool show_date = false)
         {
-            char dt[50];
-            if(show_date)
-                strftime(dt,50,"%d/%m/%Y %H:%M:%S %Z", lt);
-            else
-                strftime(dt,50,"%H:%M:%S %Z", lt);
-            date = dt;
+            std::string date = "";
+            time_t local = time(nullptr);
+            struct tm *lt = localtime(&local);
+            if (lt)
+            {
+                char dt[50];
+                if (show_date)
+                    strftime(dt, 50, "%d/%m/%Y %H:%M:%S %Z", lt);
+                else
+                    strftime(dt, 50, "%H:%M:%S %Z", lt);
+                date = dt;
+            } else
+                date = "err";
+
+            return date;
         }
-        else
-            date= "err";
-
-        return date;
-    }
 
 
-    /**
-    * Write base overload, writes to stdout the parameter t
-    */
-    template <typename T>
-    static inline void write(const T& t) {
-        std::cout << t << std::endl;
-    }
+        /**
+         * Write to cout with mutex protection
+         * @tparam T
+         * @param data
+         * @param new_line
+         * @return
+         */
+        template<typename T>
+        static inline void mutex_write(const T &data, bool new_line = false)
+        {
+            static std::mutex mtx;
+            std::lock_guard<std::mutex> guard(mtx);
+            std::cout << data;
 
-    /**
-    * Recursively writes to stdout the parameter list
-    * No formatting is applied to parameters, they are placed in the submit order without separators
-    */
-    template <typename T, typename... Targs>
-    static inline void write(const T& el, const Targs&... args)
-    {
-        std::cout << el;
-        write(args...);
-    }
+            if (new_line) std::cout << std::endl;
+        }
 
-    /**
-    * Recursively writes to stdout the parameter list with prefix and newline (1 per call)
-    * No formatting is applied to parameters, they are placed in the submit order without separators
-    */
-    template <typename... Targs>
-    static inline void console_message(const std::string& prefix, Targs... args)
-    {
+
+        /**
+        * Write base overload, writes to stdout the parameter t
+        */
+        template<typename T>
+        static inline void write(const T &t)
+        {
+            mutex_write(t, true);
+        }
+
+        /**
+        * Recursively writes to stdout the parameter list
+        * No formatting is applied to parameters, they are placed in the submit order without separators
+        */
+        template<typename T, typename... Targs>
+        static inline void write(const T &el, const Targs &... args)
+        {
+            mutex_write(el);
+            write(args...);
+        }
+
+        /**
+        * Recursively writes to stdout the parameter list with prefix and newline (1 per call)
+        * No formatting is applied to parameters, they are placed in the submit order without separators
+        */
+        template<typename... Targs>
+        static inline void console_message(const std::string &prefix, Targs... args)
+        {
 #ifdef SHOW_LOG_TIME
-        std::cout << "[" << getTimeString(LOG_SHOW_CURRENT_DAY)<<"] ";
+            std::cout << "[" << getTimeString(LOG_SHOW_CURRENT_DAY) << "] ";
 #endif
-        std::cout << prefix << " ";
-        write(args...);
+            std::cout << prefix << " ";
+            write(args...);
+        }
     }
 }
 
@@ -98,7 +120,7 @@ template <typename... Targs>
 inline void RC_DEBUG(Targs... args)
 {
 #ifndef HIDE_DEBUG
-    RickyCorte::console_message("[DEBUG]", args...);
+    RickyCorte::logging::console_message("[DEBUG]", args...);
 #endif // !HIDE_DEBUG
 }
 
@@ -106,26 +128,26 @@ template <typename... Targs>
 inline void RC_INFO(Targs... args)
 {
 #ifndef HIDE_INFO
-    RickyCorte::console_message("[INFO]", args...);
+    RickyCorte::logging::console_message("[INFO]", args...);
 #endif // !HIDE_INFO
 }
 
 template <typename... Targs>
 inline void RC_WARNING(Targs... args)
 {
-    RickyCorte::console_message("[WARNING]", args...);
+    RickyCorte::logging::console_message("[WARNING]", args...);
 }
 
 template <typename... Targs>
 inline void RC_ERROR(Targs... args)
 {
-    RickyCorte::console_message("[ERROR]", args...);
+    RickyCorte::logging::console_message("[ERROR]", args...);
 }
 
 template <typename... Targs>
 inline void RC_CRITICAL(Targs... args)
 {
-    RickyCorte::console_message("[CRITICAL]", args...);
+    RickyCorte::logging::console_message("[CRITICAL]", args...);
 }
 
 #endif //HIKARIBACKEND_LOGGING_H

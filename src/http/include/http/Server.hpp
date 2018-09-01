@@ -21,12 +21,82 @@
 #ifndef HIKARIBACKEND_SERVER_HPP
 #define HIKARIBACKEND_SERVER_HPP
 
+#include "ServerStaticConfig.hpp"
+
+#include <sys/epoll.h>
+
 namespace RickyCorte
 {
     namespace Http
     {
         class Server
         {
+
+        public:
+            /**
+             * Initialize server but NOT run it
+             * Use Run() to start server loop
+             * @param bind_port
+             */
+            Server(int bind_port = DEFAULT_SERVER_PORT);
+
+            /**
+             * Run server loop on this thread
+             */
+            void Run();
+
+
+            /**
+             * Stop server loop
+             */
+            void Dispose();
+
+        private:
+
+            /**
+             * Bind server to specified port
+             *
+             * @param port server_port
+             * @return listen socket fd (not blocking)
+             */
+            int bind_server_port(int port);
+
+            /**
+             * Accept a new connection pending at server_fd
+             *
+             * @param server_fd listen socket
+             * @return new client descriptor
+             */
+            int accept_connection(int server_fd);
+
+            /**
+             * Check for error in event and close if any problem is found
+             * @param event event to check
+             * @return true if error occurred
+             */
+            bool check_epoll_error(epoll_event *event);
+
+
+            /**
+             * Handle a event on a socket
+             * @param event
+             */
+            void handle_socket_event(epoll_event* event);
+
+
+            /**
+             * Add socket to epoll watcher
+             * @param target_socket socket to add to epoll
+             * @param epoll_fd epoll descriptor
+             * @return false on error
+             */
+            bool add_to_epoll(int target_socket, int epoll_fd);
+
+            int _server_port;
+            bool _exit_loop;
+
+            int _epoll_fd;
+            int _server_fd;
 
         };
     }

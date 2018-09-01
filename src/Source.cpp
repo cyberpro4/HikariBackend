@@ -20,11 +20,11 @@
 
 #include <iostream>
 
-#include <nlohmann/json.hpp>
 #include <rickycorte/Logging.hpp>
 
 #include "HikariStaticConfig.hpp"
 #include "config/Config.hpp"
+#include "http/Server.hpp"
 
 
 void printStartHeader()
@@ -38,11 +38,11 @@ void printStartHeader()
 
 int main()
 {
-    using namespace nlohmann;
     using namespace RickyCorte;
 
     printStartHeader();
 
+    /*
     RC_INFO("Get: ", Config::Global::Get("i love"));
     RC_INFO("Get: ", Config::Global::Get("parent/inner", "rip"));
     Config::Global::Set("i love", "lolies");
@@ -52,6 +52,11 @@ int main()
     RC_INFO("Get: ", Config::Global::Get("test"));
 
     Config::Global::Dispose();
+    */
+
+    Http::Server server;
+    server.Run();
+
 
     return 0;
 }
