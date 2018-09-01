@@ -222,6 +222,8 @@ namespace RickyCorte::Http
 
         //TODO: sto coso lo mandiamo in timeout al posto di chiuderlo eh :3
         close(event->data.fd);
+
+        delete[] buffer;
         //RC_INFO("Closed: ", event->data.fd);
     }
 
