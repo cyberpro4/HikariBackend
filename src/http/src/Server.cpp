@@ -33,6 +33,8 @@
 #include <fcntl.h>
 #include <netdb.h>
 
+#include "http/Reply.hpp"
+
 
 namespace RickyCorte::Http
 {
@@ -172,7 +174,7 @@ namespace RickyCorte::Http
             (!(event->events & EPOLLIN)))
         {
             // An error has occured on this fd
-            RC_ERROR("Error in socket fd: ", event->data.fd, ". Error type: ",event->events);
+            RC_ERROR("Error in socket fd: ", event->data.fd, ". Error type: ",event->events, " Error number: ", errno);
             fprintf(stderr, "epoll error. events=%u\n", event->events);
             close(event->data.fd);
             return true;
@@ -206,6 +208,14 @@ namespace RickyCorte::Http
             memset(buffer, '\0', READ_BUFFER_SIZE);
             read_sz = read(event->data.fd, buffer, READ_BUFFER_SIZE -1);
 
+            //check if socket has been closed
+            if(read_sz == 0)
+            {
+                RC_INFO("Socket ", event->data.fd, " has been closed");
+                close(event->data.fd);
+                return;
+            }
+
             ioctl(event->data.fd, FIONREAD, &ready_to_read_sz);
 
             if(read_sz > 0) req_string += buffer;
@@ -214,14 +224,14 @@ namespace RickyCorte::Http
         while(ready_to_read_sz > 0 && read_sz > 0);
 
         //RC_INFO("Read ", req_string.size(), " from ", event->data.fd);
-        req_string = "HTTP/1.1 200 ok\r\n\r\n"+req_string;
+        req_string = Http::Reply(200, req_string).Dump();
 
 
         write(event->data.fd, req_string.c_str(), req_string.size());
         //RC_INFO("Write ", req_string.size(), " to ", event->data.fd);
 
         //TODO: sto coso lo mandiamo in timeout al posto di chiuderlo eh :3
-        close(event->data.fd);
+        //close(event->data.fd);
 
         delete[] buffer;
         //RC_INFO("Closed: ", event->data.fd);

@@ -43,8 +43,8 @@ You can define two different variables to toggle INFO and DUBUG logs
 * ```HIDE_INFO``` toggles INFO messages
 * ```SHOW_LOG_TIME``` undefine this variable to hide log date
 * ```LOG_SHOW_CURRENT_DAY``` set this variable to true to show current date (only works if SHOW_LOG_TIME is set)
+* ```FORCE_THREAD_SAFE``` define this variable if you want to enforce thread safety
 
 ## Future improvements
-* Thread safety
 * Write to system logs
 * Write on log files

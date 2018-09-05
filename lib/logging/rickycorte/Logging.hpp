@@ -1,29 +1,31 @@
 /*
- * Hikari Backend
- *
- * Copyright (C) 2018 RickyCorte
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Affero General Public License as published
- * by the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Affero General Public License for more details.
- *
- * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- *
- */
+* Hikari Backend
+*
+* Copyright (C) 2018 RickyCorte
+*
+* This program is free software: you can redistribute it and/or modify
+* it under the terms of the GNU Affero General Public License as published
+* by the Free Software Foundation, either version 3 of the License, or
+* (at your option) any later version.
+*
+* This program is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU Affero General Public License for more details.
+*
+* You should have received a copy of the GNU Affero General Public License
+* along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*
+*/
 
 #ifndef HIKARIBACKEND_LOGGING_H
 #define HIKARIBACKEND_LOGGING_H
 
-
 #define LOG_SHOW_CURRENT_DAY false
+#ifndef _WIN32
 #define SHOW_LOG_TIME
+#endif
+// #define FORCE_THREAD_SAFE
 
 
 #include <iostream>
@@ -37,11 +39,11 @@ namespace RickyCorte
     namespace logging
     {
         /**
-         * Get the current hour
-         *
-         * @param show_date pass true to show current day, month and year
-         * @return formatted date string
-         */
+        * Get the current hour
+        *
+        * @param show_date pass true to show current day, month and year
+        * @return formatted date string
+        */
         static inline std::string getTimeString(bool show_date = false)
         {
             std::string date = "";
@@ -55,7 +57,8 @@ namespace RickyCorte
                 else
                     strftime(dt, 50, "%H:%M:%S %Z", lt);
                 date = dt;
-            } else
+            }
+            else
                 date = "err";
 
             return date;
@@ -63,17 +66,19 @@ namespace RickyCorte
 
 
         /**
-         * Write to cout with mutex protection
-         * @tparam T
-         * @param data
-         * @param new_line
-         * @return
-         */
+        * Write to cout with mutex protection
+        * @tparam T
+        * @param data
+        * @param new_line
+        * @return
+        */
         template<typename T>
         static inline void mutex_write(const T &data, bool new_line = false)
         {
+#if FORCE_THREAD_SAFE
             static std::mutex mtx;
-            std::lock_guard<std::mutex> guard(mtx);
+			std::lock_guard<std::mutex> guard(mtx);
+#endif
             std::cout << data;
 
             if (new_line) std::cout << std::endl;
