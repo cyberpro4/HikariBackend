@@ -18,12 +18,26 @@
  *
  */
 
-#ifndef HIKARIBACKEND_SERVERSTATICCONFIG_HPP
-#define HIKARIBACKEND_SERVERSTATICCONFIG_HPP
+#ifndef HIKARIBACKEND_REQUEST_HPP
+#define HIKARIBACKEND_REQUEST_HPP
 
-#define DEFAULT_SERVER_PORT 8080
-#define EPOLL_MAX_EVENTS 64
-#define MAX_CONNECTIONS 5
-#define READ_BUFFER_SIZE 256
+#include <string>
+#include <map>
+#include <vector>
 
-#endif //HIKARIBACKEND_SERVERSTATICCONFIG_HPP
+namespace RickyCorte
+{
+namespace Http
+{
+    /**
+     * An incoming http request
+     */
+    class Request
+    {
+
+    };
+
+}
+}
+
+#endif //HIKARIBACKEND_REQUEST_HPP

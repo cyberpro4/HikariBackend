@@ -18,7 +18,7 @@
  *
  */
 
-#include "http/Server.hpp"
+#include "Server.hpp"
 
 #include <rickycorte/Logging.hpp>
 
@@ -36,7 +36,7 @@
 #include "http/Reply.hpp"
 
 
-namespace RickyCorte::Http
+namespace RickyCorte
 {
 
     Server::Server(int bind_port)

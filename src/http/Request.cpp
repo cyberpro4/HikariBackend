@@ -18,33 +18,4 @@
  *
  */
 
-#include <iostream>
-
-#include <rickycorte/Logging.hpp>
-
-#include "global/GlobalStaticConfig.hpp"
-#include "Server.hpp"
-
-
-void printStartHeader()
-{
-    std::cout << HEADER_DISPLAY_NAME << std::endl << " Release "
-        << HIKARI_VERSION_MAJOR << "."
-        << HIKARI_VERSION_MINOR << "."
-        << HIKARI_VERSION_PATCH
-        << std::endl << std::endl;
-}
-
-int main()
-{
-    using namespace RickyCorte;
-
-    printStartHeader();
-
-
-    Server server;
-    server.Run();
-
-
-    return 0;
-}
+#include "Request.hpp"

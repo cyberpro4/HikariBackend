@@ -21,14 +21,12 @@
 #ifndef HIKARIBACKEND_SERVER_HPP
 #define HIKARIBACKEND_SERVER_HPP
 
-#include "ServerStaticConfig.hpp"
+#include "GlobalStaticConfig.hpp"
 
 #include <sys/epoll.h>
 
 namespace RickyCorte
 {
-    namespace Http
-    {
         class Server
         {
 
@@ -99,7 +97,6 @@ namespace RickyCorte
             int _server_fd;
 
         };
-    }
 }
 
 
