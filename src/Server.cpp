@@ -34,6 +34,7 @@
 #include <netdb.h>
 
 #include "http/Reply.hpp"
+#include "http/Request.hpp"
 
 
 namespace RickyCorte
@@ -208,33 +209,46 @@ namespace RickyCorte
             memset(buffer, '\0', READ_BUFFER_SIZE);
             read_sz = read(event->data.fd, buffer, READ_BUFFER_SIZE -1);
 
-            //check if socket has been closed
-            if(read_sz == 0)
+            ioctl(event->data.fd, FIONREAD, &ready_to_read_sz);
+
+            if(read_sz > 0)
+            {
+                req_string += buffer;
+            }
+            else
             {
                 RC_INFO("Socket ", event->data.fd, " has been closed");
                 close(event->data.fd);
                 return;
             }
 
-            ioctl(event->data.fd, FIONREAD, &ready_to_read_sz);
-
-            if(read_sz > 0) req_string += buffer;
-
         }
-        while(ready_to_read_sz > 0 && read_sz > 0);
+        while(ready_to_read_sz > 0);
 
-        //RC_INFO("Read ", req_string.size(), " from ", event->data.fd);
-        req_string = Http::Reply(200, req_string).Dump();
+        // let's check request size
+        if(req_string.size() > MAX_HTTP_REQUEST_SIZE)
+        {
+            // we just lie about our max request size
+            // most of the clients will just trust us and don't overload the server
+            req_string = Http::Reply(413, "Payload size too large! Max size is: "
+                                          + std::to_string(MAX_HTTP_REQUEST_SIZE / 2)).Dump();
+        }
+        else
+        {
+            //RC_DEBUG("Got request: ", req_string);
+            auto req = Http::Request(req_string.c_str(), req_string.size());
+            req_string = Http::Reply(200, "Your body:\n!BEGIN!\n" + req.GetBody() +"\n!END!").Dump();
+        }
 
+        //RC_DEBUG("Computed reply: ", req_string);
+        if(write(event->data.fd, req_string.c_str(), req_string.size()) <= 0)
+        {
+            RC_ERROR("Error writing on socket: ", event->data.fd);
+        }
 
-        write(event->data.fd, req_string.c_str(), req_string.size());
-        //RC_INFO("Write ", req_string.size(), " to ", event->data.fd);
 
         //TODO: sto coso lo mandiamo in timeout al posto di chiuderlo eh :3
-        //close(event->data.fd);
-
         delete[] buffer;
-        //RC_INFO("Closed: ", event->data.fd);
     }
 
 

@@ -32,4 +32,7 @@
 #define MAX_CONNECTIONS 5
 #define READ_BUFFER_SIZE 256
 
+/* 2kbytes per request is a really huge limit! */
+#define MAX_HTTP_REQUEST_SIZE 16384
+
 #endif //HIKARIBACKEND_HIKARICONFIG_H

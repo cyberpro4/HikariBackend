@@ -66,12 +66,12 @@ namespace RickyCorte::Http
 
         std::string reply = "HTTP/";
         reply += REPLY_HTTP_VERSION;
-        reply += " " + std::to_string(_code) + " " + translateHttpCode(_code) + "\n";
+        reply += " " + std::to_string(_code) + " " + translateHttpCode(_code) + "\r\n";
         for(auto itr = _options.begin(); itr != _options.end(); itr++)
         {
-            reply += itr->first + ": " + itr->second + "\n";
+            reply += itr->first + ": " + itr->second + "\r\n";
         }
-        reply += "\r\n\r\n";
+        reply += "\r\n";
         reply += _body;
 
 
