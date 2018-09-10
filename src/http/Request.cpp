@@ -22,14 +22,12 @@
 
 #include <cstring>
 
-#include <rickycorte/Logging.hpp>
-
 namespace RickyCorte::Http
 {
 
 
     Request::Request(const char *req_string, size_t len)
-            : _request_string{nullptr}, _path{nullptr},_body{nullptr}, _error_code{HTTP_UNPARSED}, _request_size{len + 1}
+            : _request_string{nullptr},_request_size{len + 1}, _path{nullptr},_body{nullptr}, _error_code{HTTP_UNPARSED}
     {
         _request_string = new char[_request_size];
         if(!_request_string)
