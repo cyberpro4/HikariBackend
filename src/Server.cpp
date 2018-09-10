@@ -23,6 +23,7 @@
 #include <rickycorte/Logging.hpp>
 
 #include <cstring>
+#include <chrono>
 
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -235,9 +236,28 @@ namespace RickyCorte
         }
         else
         {
+            using namespace std::chrono;
+
+            high_resolution_clock::time_point start_tm = high_resolution_clock::now();
+
             //RC_DEBUG("Got request: ", req_string);
             auto req = Http::Request(req_string.c_str(), req_string.size());
-            req_string = Http::Reply(200, "Your body:\n!BEGIN!\n" + req.GetBody() +"\n!END!").Dump();
+
+            auto duration = duration_cast<microseconds>( high_resolution_clock::now() - start_tm ).count();
+            RC_DEBUG("Parse time: ", duration,"us");
+
+
+            if(req.IsValid())
+            {
+                std::string headers = std::to_string(req.GetType()) + " at " + req.GetPath() + "\nYour Headers:\n";
+                for (auto itr = req.GetHeaderOptions().begin(); itr != req.GetHeaderOptions().end(); itr++)
+                {
+                    headers += "\t" + itr->first + " -> " + itr->second + "\n";
+                }
+
+                req_string = Http::Reply(200, headers + "Your body:\n!BEGIN!\n" + req.GetBody() + "\n!END!").Dump();
+            }
+            else req_string = Http::Reply(400, "Broken http request").Dump();
         }
 
         //RC_DEBUG("Computed reply: ", req_string);
@@ -245,7 +265,6 @@ namespace RickyCorte
         {
             RC_ERROR("Error writing on socket: ", event->data.fd);
         }
-
 
         //TODO: sto coso lo mandiamo in timeout al posto di chiuderlo eh :3
         delete[] buffer;

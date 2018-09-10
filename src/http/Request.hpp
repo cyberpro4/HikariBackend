@@ -34,12 +34,15 @@ namespace Http
     class Request
     {
     public:
+
+        typedef std::map<std::string, char *> HeaderOptions;
+
         Request(const char *req_string, size_t len);
 
         /**
          * Request types supported
          */
-        enum RequestType {GET, POST, PUT, DELETE }; /* we don't support all methods right now */
+        enum RequestType {GET = 1, POST, PUT, DELETE }; /* we don't support all methods right now */
 
         /**
          * Returns true if the request is valid
@@ -70,6 +73,11 @@ namespace Http
          */
         std::string GetHeader(const std::string& option);
 
+        /**
+         * Return the whole header option map
+         * @return
+         */
+        const HeaderOptions &GetHeaderOptions();
 
         /**
          * Return request body if any
@@ -89,19 +97,12 @@ namespace Http
          */
         inline bool parse_first_header_line(char *line_start);
 
-        /**
-         * Parse a header option line
-         * @param line_start
-         * @return
-         */
-        inline bool parse_header_option(char *line_start);
-
         char *_request_string;
         size_t _request_size;
 
         char *_path;
         RequestType _req_type;
-        std::map<std::string, char *> _header_options;
+        HeaderOptions _header_options;
         char *_body;
 
         bool _is_valid;
