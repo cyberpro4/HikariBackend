@@ -29,12 +29,12 @@ namespace RickyCorte::Http
 
 
     Request::Request(const char *req_string, size_t len)
-            : _request_string{nullptr}, _path{nullptr},_body{nullptr}, _is_valid{false}, _request_size{len + 1}
+            : _request_string{nullptr}, _path{nullptr},_body{nullptr}, _error_code{HTTP_UNPARSED}, _request_size{len + 1}
     {
         _request_string = new char[_request_size];
         if(!_request_string)
         {
-            RC_ERROR("Unable to allocate http request internal data");
+            _error_code = HTTP_BUFFER_ERROR;
             return;
         }
         memcpy(_request_string, req_string, len);
@@ -49,8 +49,8 @@ namespace RickyCorte::Http
         {
             if(_request_string[i] == '\0')                  // unexpected end of line in the middle of the request
             {
-                _header_options.clear();
-                RC_ERROR("[HTTP] Found unexpected \\0");
+                _error_code = HTTP_UNEXPECTED_TOKEN;
+                clean_up();
                 return;
             }
 
@@ -64,10 +64,11 @@ namespace RickyCorte::Http
             if(_request_string[i] == '\n')
             {
                 // we check that the previous item is a \r because we replaced it earlier
+                // we also check for range just to make sure we don't mess up
                 if(i + 2 > _request_size || i < 1 || _request_string[i - 1] != '\r')
                 {
-                    _header_options.clear();                // ops, out of range in headers
-                    RC_ERROR("[HTTP] Broken end of line formatting on line ", line_number);
+                    _error_code = HTTP_FORMAT_ERROR;
+                    clean_up();
                     return;
                 }
 
@@ -82,13 +83,14 @@ namespace RickyCorte::Http
                         // check that the first line of header is valid
                         if (!parse_first_header_line(previous_line_start))
                         {
-                            RC_ERROR("[HTTP] Broken top line");
+                            // the above function sets error code by itself
+                            clean_up();
                             return;
                         }
                     }
                     else
                     {
-                        //check if ':' is in the current line
+                        // check if ':' is in the current line
                         if(last_two_dots >= 0 && previous_line_start - _request_string < last_two_dots)
                         {
                             _request_string[last_two_dots] = '\0'; // add terminator to split option name and value
@@ -97,8 +99,8 @@ namespace RickyCorte::Http
                         }
                         else
                         {
-                            _header_options.clear();
-                            RC_ERROR("[HTTP] Broken header option");
+                            _error_code = HTTP_BROKEN_OPTION;
+                            clean_up();
                             return;                        // broken header option
                         }
                     }
@@ -107,7 +109,7 @@ namespace RickyCorte::Http
                     previous_line_start = _request_string + i + 1;
 
                 }
-                else if(_request_string[i+2] == '\n')       // we found body because we a double new line terminator!
+                else if(_request_string[i+2] == '\n')       // we found body because we have a double new line terminator!
                 {
                     if(i + 3 < _request_size)               // range check before doing a dangerous operation
                         _body = _request_string + i + 3;    // (+3 -> 2 terminators and 1 body element)
@@ -117,12 +119,21 @@ namespace RickyCorte::Http
             }
         }
 
-        _is_valid = true;
+        if(_req_type == RequestType::GET)
+        {
+            if(!_body && strcmp(_body,"") != 0) // GET operations are not supposed to have a payload
+            {
+                _error_code = HTTP_UNEXPECTED_PAYLOAD;
+                return;
+            }
+        }
+
+        _error_code = 0;
     }
 
     bool Request::IsValid()
     {
-        return _is_valid;
+        return _error_code == 0;
     }
 
     Request::RequestType Request::GetType()
@@ -157,14 +168,19 @@ namespace RickyCorte::Http
 
     Request::~Request()
     {
-        if(_request_string) delete[] _request_string;
+       clean_up();
     }
 
     bool Request::parse_first_header_line(char *line_start)
     {
-        RC_DEBUG("Line 1: ", line_start);
-        char *type = nullptr, *protocol = nullptr;
-        type = line_start;
+        if(!line_start)
+        {
+            _error_code = HTTP_UNPARSED;
+            return false;
+        }
+
+        //RC_DEBUG("Line 1: ", line_start);
+        char *protocol = nullptr;
         size_t len = strlen(line_start);
 
         size_t space_count = 0;
@@ -181,26 +197,102 @@ namespace RickyCorte::Http
                 // the first line can't contain more than 3 spaces
                 if(space_count > 2 )
                 {
-                    _path = nullptr;
+                    _error_code = HTTP_BROKEN_HEADER;
                     return false;
                 }
             }
         }
 
-        if(strcmp(type, "GET") == 0) _req_type = RequestType::GET;
-        else if(strcmp(type, "POST") == 0) _req_type = RequestType::POST;
-        else if(strcmp(type, "PUT") == 0) _req_type = RequestType::PUT;
-        else if(strcmp(type, "DELETE") == 0) _req_type = RequestType::DELETE;
-        else return false; // broken protocol
+        if(!_path || !protocol)
+        {
+            _error_code = HTTP_BROKEN_HEADER;
+            return false;
+        }
 
         // we only support http 1.1
-        return type && _path && protocol && (strcmp(protocol, "HTTP/1.1") == 0);
+        if(strcmp(protocol, "HTTP/1.1") != 0)
+        {
+            _error_code = HTTP_NOT_SUPPORTED_VERSION;
+            return false;
+        }
+
+        if(strcmp(line_start, "GET") == 0) _req_type = RequestType::GET;
+        else if(strcmp(line_start, "POST") == 0) _req_type = RequestType::POST;
+        else if(strcmp(line_start, "PUT") == 0) _req_type = RequestType::PUT;
+        else if(strcmp(line_start, "DELETE") == 0) _req_type = RequestType::DELETE;
+        else
+        {
+            _error_code = HTTP_METHOD_NOT_SUPPORTED;
+            return false; // broken protocol
+        }
+
+        return true;
     }
 
 
     const Request::HeaderOptions &Request::GetHeaderOptions()
     {
         return _header_options;
+    }
+
+    void Request::clean_up()
+    {
+        if(_request_string)
+        {
+            delete[] _request_string;
+            _request_string = nullptr;
+        }
+        _request_size = 0;
+        _path = nullptr;
+        _header_options.clear();
+        _body = nullptr;
+    }
+
+    int Request::GetErrorCode()
+    {
+        return _error_code;
+    }
+
+    std::string Request::ErrorCodeToString(int error_code)
+    {
+        std::string msg = "";
+        switch (error_code)
+        {
+            case 0:
+                break;
+            case HTTP_BUFFER_ERROR:
+                // NEVER GIVE the client sensible information about server resources
+                msg = "Sorry, we can't handle your request right now!";
+                break;
+            case HTTP_UNPARSED:
+                msg = "Something when wrong parsing your request";
+                break;
+            case HTTP_BROKEN_HEADER:
+                msg = "Header error";
+                break;
+            case HTTP_BROKEN_OPTION:
+                msg = "Options error";
+                break;
+            case HTTP_FORMAT_ERROR:
+                msg = "Formatting error";
+                break;
+            case HTTP_UNEXPECTED_TOKEN:
+                msg = "Unexpected token found in header";
+                break;
+            case HTTP_METHOD_NOT_SUPPORTED:
+                msg = "Method not supported";
+                break;
+            case HTTP_UNEXPECTED_PAYLOAD:
+                msg = "Unexpected payload, check your method";
+                break;
+            case HTTP_NOT_SUPPORTED_VERSION:
+                msg = "Http version version not supported. Please use version 1.1";
+                break;
+            default:
+                msg = "Error code "+ std::to_string(error_code) + " is not defined";
+                break;
+        }
+        return msg;
     }
 
 

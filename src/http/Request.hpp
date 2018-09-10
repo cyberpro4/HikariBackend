@@ -42,13 +42,35 @@ namespace Http
         /**
          * Request types supported
          */
-        enum RequestType {GET = 1, POST, PUT, DELETE }; /* we don't support all methods right now */
+        enum class RequestType {GET = 1, POST, PUT, DELETE }; /* we don't support all methods right now */
+
+        /**
+         * HTTP parser errors
+         */
+        enum HttpErrors {
+            HTTP_BUFFER_ERROR = -2,
+            HTTP_UNPARSED = -1,
+            HTTP_BROKEN_HEADER = 1,
+            HTTP_BROKEN_OPTION,
+            HTTP_FORMAT_ERROR,
+            HTTP_UNEXPECTED_TOKEN,
+            HTTP_METHOD_NOT_SUPPORTED,
+            HTTP_UNEXPECTED_PAYLOAD,
+            HTTP_NOT_SUPPORTED_VERSION
+        };
 
         /**
          * Returns true if the request is valid
          * @return
          */
         bool IsValid();
+
+        /**
+         * Returns parse error code
+         * 0 with no error
+         * @return
+         */
+        int GetErrorCode();
 
         /**
          * Returns request type
@@ -88,6 +110,13 @@ namespace Http
 
         virtual ~Request();
 
+        /**
+         * Translates error code to a human readable error
+         * @param error_code
+         * @return
+         */
+        static std::string ErrorCodeToString(int error_code);
+
     private:
         /**
          * Parse first line of http header
@@ -97,6 +126,11 @@ namespace Http
          */
         inline bool parse_first_header_line(char *line_start);
 
+        /**
+         * Clean ALL resources used by the class!
+         */
+        inline void clean_up();
+
         char *_request_string;
         size_t _request_size;
 
@@ -105,8 +139,7 @@ namespace Http
         HeaderOptions _header_options;
         char *_body;
 
-        bool _is_valid;
-
+        int _error_code;
     };
 
 }

@@ -249,7 +249,7 @@ namespace RickyCorte
 
             if(req.IsValid())
             {
-                std::string headers = std::to_string(req.GetType()) + " at " + req.GetPath() + "\nYour Headers:\n";
+                std::string headers = std::to_string((int)req.GetType()) + " at " + req.GetPath() + "\nYour Headers:\n";
                 for (auto itr = req.GetHeaderOptions().begin(); itr != req.GetHeaderOptions().end(); itr++)
                 {
                     headers += "\t" + itr->first + " -> " + itr->second + "\n";
@@ -257,7 +257,10 @@ namespace RickyCorte
 
                 req_string = Http::Reply(200, headers + "Your body:\n!BEGIN!\n" + req.GetBody() + "\n!END!").Dump();
             }
-            else req_string = Http::Reply(400, "Broken http request").Dump();
+            else
+            {
+                req_string = Http::Reply(400, Http::Request::ErrorCodeToString(req.GetErrorCode())).Dump();
+            }
         }
 
         //RC_DEBUG("Computed reply: ", req_string);
