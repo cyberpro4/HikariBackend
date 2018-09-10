@@ -4,6 +4,7 @@ import sys
 
 
 requests = [
+    "PUSSY /hello HTTP/1.1\r\n\r\n",
     "\0",
     "\r\n",
     "\r\n\r\n",
@@ -20,7 +21,6 @@ requests = [
     "GET /hello HTTP/1.1\r\nUser-Agent: test\r\n",
     "GET /hello HTTP/1.2\r\nUser-Agent: test\r\nAccept-Language: en-us\r\nAccept-Encoding: gzip, deflate\r\nConnection: Keep-Alive\r\n\r\n",
     "GET /hello HTTP/1.1 \r\nUser-Agent: test\r\nAccept-Language: en-us\r\nAccept-Encoding: gzip, deflate\r\nConnection: Keep-Alive\r\n\r\n",
-    "PUSSY /hello HTTP/1.1\r\n\r\n",
     "GET /hello HTTP/1.1\r\n\r\n",
     "GET /hello HTTP/1.1\r\nUser-Agent: test\r\nAccept-Language: en-us\r\nAccept-Encoding: gzip, deflate\r\nConnection: Keep-Alive\r\n\r\n",
     "POST /hello HTTP/1.1\r\nUser-Agent: test\r\nAccept-Language: en-us\r\nAccept-Encoding: gzip, deflate\r\nConnection: Keep-Alive\r\n\r\ntest body"

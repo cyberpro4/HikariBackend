@@ -74,42 +74,38 @@ namespace RickyCorte::Http
 
                 _request_string[i-1] = '\0';                // replace \r with \0
 
-                // now we have two possibilities
-                if(_request_string[i+1] != '\r')            // new header line because next character is not a terminator
+                // chose parser based on line number
+                if(line_number == 0)
                 {
-                    // chose parser based on line number
-                    if(line_number == 0)
+                    // check that the first line of header is valid
+                    if (!parse_first_header_line(previous_line_start))
                     {
-                        // check that the first line of header is valid
-                        if (!parse_first_header_line(previous_line_start))
-                        {
-                            // the above function sets error code by itself
-                            clean_up();
-                            return;
-                        }
+                        // the above function sets error code by itself
+                        clean_up();
+                        return;
+                    }
+                }
+                else
+                {
+                    // check if ':' is in the current line
+                    if(last_two_dots >= 0 && previous_line_start - _request_string < last_two_dots)
+                    {
+                        _request_string[last_two_dots] = '\0'; // add terminator to split option name and value
+                        // add header option to map
+                        _header_options[std::string(previous_line_start)] = _request_string + last_two_dots + 2; // skip space after :
                     }
                     else
                     {
-                        // check if ':' is in the current line
-                        if(last_two_dots >= 0 && previous_line_start - _request_string < last_two_dots)
-                        {
-                            _request_string[last_two_dots] = '\0'; // add terminator to split option name and value
-                            // add header option to map
-                            _header_options[std::string(previous_line_start)] = _request_string + last_two_dots + 2; // skip space after :
-                        }
-                        else
-                        {
-                            _error_code = HTTP_BROKEN_OPTION;
-                            clean_up();
-                            return;                        // broken header option
-                        }
+                        _error_code = HTTP_BROKEN_OPTION;
+                        clean_up();
+                        return;                        // broken header option
                     }
-
-                    line_number++;
-                    previous_line_start = _request_string + i + 1;
-
                 }
-                else if(_request_string[i+2] == '\n')       // we found body because we have a double new line terminator!
+                line_number++;
+                previous_line_start = _request_string + i + 1;
+
+
+                if(_request_string[i+2] == '\n')       // we found body because we have a double new line terminator!
                 {
                     if(i + 3 < _request_size)               // range check before doing a dangerous operation
                         _body = _request_string + i + 3;    // (+3 -> 2 terminators and 1 body element)
